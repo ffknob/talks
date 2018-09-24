@@ -1,0 +1,200 @@
+# Índices
+GET _cat/indices/jurisprudencia*,pesquisas-realizadas,listas?v
+
+# match_all
+GET listas/_search
+GET pesquisas-realizadas/_search
+GET jurisprudencia-pareceres/_search
+
+# Ex. lista de seleção
+GET listas/_search
+{
+  "sort": [
+    { "valor.keyword": { "order": "asc" } }
+  ],
+  "query": {
+    "terms": { "nome.keyword": [ "decisoes-tipos-processos" ] }
+  }
+}
+
+# Ex. sugestões baseadas em pesquisas realizadas
+GET pesquisas-realizadas/_search
+{
+  "size": 0,
+  "sort": [
+    { "_score": { "order": "desc"  } }
+  ],
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "terms": {
+            "indice.keyword": [ "jurisprudencia-decisoes" ]
+          }
+        },
+        {
+          "match_phrase_prefix": { "termos.original": "proc"  }
+        }
+      ]
+    }
+  },
+  "aggs": {
+    "termos.original/Termos sugeridos/palavra-chave": {
+      "terms": {
+        "field": "termos.original.keyword",
+        "size": 5,
+        "min_doc_count": 1,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    }
+  }
+}
+
+# Ex. autocomplete
+GET jurisprudencia-decisoes/_search
+{
+  "sort": [
+    {
+      "_score": { "order": "desc" }
+    }
+  ],
+  "query": {
+    "match_phrase_prefix": { "orgao": "porto" }
+  },
+  "aggs": {
+    "orgao/Órgãos/palavra-chave": {
+      "terms": {
+        "field": "orgao.keyword",
+        "size": 5,
+        "min_doc_count": 1,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    }
+  }
+}
+
+# Ex. pesquisa
+GET jurisprudencia-decisoes/_search
+{
+  "sort": [
+    {
+      "dt_sessao": { "order": "desc" }
+    }
+  ],
+  
+  "highlight": {
+    "number_of_fragments": 9,
+    "fragment_size": 100,
+    "pre_tags": [ "<em>" ],
+    "post_tags": ["</em>" ],
+    "fields": [
+      {
+        "relatorio": { "number_of_fragments": 3 }
+      },
+      {
+        "texto": { "number_of_fragments": 3 }
+      }
+    ],
+    "require_field_match": true
+  },
+  
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "query_string": {
+            "query": "processo",
+            "analyze_wildcard": true,
+            "fields": [
+              "nr_processo_fmt", "ds_tp_processo",
+              "orgao", "precede",
+              "sucede", "nm_orgao_julgador",
+              "nm_gabinete", "nm_magistrado",
+              "nm_orgao", "link_video_sessao",
+              "texto_ementa", "refleg",
+              "novaref", "relatorio",
+              "dec_descricao", "texto",
+              "retirado_pauta", "sol_vista",
+              "susp_julgamento", "voto_desempate",
+              "devolucao_vistas"
+            ]
+          }
+        },
+        {
+          "terms": {
+            "orgao.keyword": [ "EXECUTIVO MUNICIPAL DE PORTO ALEGRE" ]
+          }
+        },
+        {
+          "range": {
+            "dt_sessao": {
+              "gte": "2015-01-01T02:00:00.000Z",
+              "lte": "2015-12-31T02:00:00.000Z"
+            }
+          }
+        }
+      ]
+    }
+  },
+  
+  "aggs": {
+    "nm_orgao_julgador/Órgão Julgador/palavra-chave": {
+      "terms": {
+        "field": "nm_orgao_julgador.keyword",
+        "size": 15,
+        "min_doc_count": 1,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    },
+    "nm_gabinete/Gabinete/palavra-chave": {
+      "terms": {
+        "field": "nm_gabinete.keyword",
+        "size": 15,
+        "min_doc_count": 1,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    },
+    "orgao/Órgão fiscalizado/palavra-chave": {
+      "terms": {
+        "field": "orgao.keyword",
+        "size": 15,
+        "min_doc_count": 1,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    },
+    "ds_tp_processo/Tipo de Processo/palavra-chave": {
+      "terms": {
+        "field": "ds_tp_processo.keyword",
+        "size": 15,
+        "min_doc_count": 1,
+        "order": {
+          "_count": "desc"
+        }
+      }
+    },
+    "dt_sessao/Ano decisão/data-ano": {
+      "terms": {
+        "field": "dt_sessao",
+        "script": {
+          "source": """doc["dt_sessao"].value.year"""
+        },
+        "size": 15,
+        "min_doc_count": 1,
+        "order": {
+          "_key": "desc"
+        }
+      }
+    }
+  }
+}
+
