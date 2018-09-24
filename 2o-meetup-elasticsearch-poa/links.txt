@@ -1,0 +1,19 @@
+
+Nova Consulta de Jurisprudência:
+https://portal.tce.rs.gov.br/pesquisa/jurisprudencia/
+
+Kibana:
+http://vmsrv96.tce.rs.gov.br:5601/
+
+Grafana:
+http://vmsrv74.tce.rs.gov.br:3003/
+
+Consulta de Jurisprudência anterior:
+http://srv00.tce.rs.gov.br:8081/tcrsnet/lpext.dll?f=templates&fn=main-j.htm&2.0
+
+Consulta processual:
+https://portal.tce.rs.gov.br/search?oe=UTF-8&lr=lang_pt&ulang=pt-BR&access=p&entqr=3&entqrm=0&wc=200&wc_mc=1&ud=1&filter=0&getfields=*&ie=UTF-8&q=processo&site=processos_pub&client=tce_rs_processos&proxystylesheet=tce_rs_processos&aba=consultas
+
+
+
+
